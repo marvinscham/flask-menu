@@ -65,30 +65,34 @@ def register_menu(
     def menu_decorator(f):
         """Decorator of a view function that should be included in the menu."""
         if isinstance(app, Blueprint):
-            endpoint = app.name + "." + f.__name__
-            before_first_request = app.before_app_first_request
+            before_first_request = app.record
         else:
-            endpoint = f.__name__
-            before_first_request = app.before_first_request
+            before_first_request = lambda x : x()
 
         expected = getfullargspec(f).args
 
         @before_first_request
-        def _register_menu_item():
-            # str(path) allows path to be a string-convertible object
-            # that may be useful for delayed evaluation of path
-            item = current_menu.submenu(str(path))
-            item.register(
-                endpoint,
-                text,
-                order,
-                endpoint_arguments_constructor=endpoint_arguments_constructor,
-                dynamic_list_constructor=dynamic_list_constructor,
-                active_when=active_when,
-                visible_when=visible_when,
-                expected_args=expected,
-                **kwargs,
-            )
+        def _register_menu_item(state=None):
+            if state is None:
+                endpoint = f.__name__
+                ctx = app.app_context
+            else:
+                endpoint = state.name + '.' + f.__name__
+                ctx = state.app.app_context
+
+            with ctx():
+                item = current_menu.submenu(str(path))
+                item.register(
+                    endpoint,
+                    text,
+                    order,
+                    endpoint_arguments_constructor=endpoint_arguments_constructor,
+                    dynamic_list_constructor=dynamic_list_constructor,
+                    active_when=active_when,
+                    visible_when=visible_when,
+                    expected_args=expected,
+                    **kwargs,
+                )
 
         return f
 
