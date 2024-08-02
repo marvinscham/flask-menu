@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 1.0.2 (released 2024-08-02)
+-----------------------------------
+
+- Compatibility fix for Flask 3.x
+
 Version 1.0.1 (released 2024-03-22)
 -----------------------------------
 
